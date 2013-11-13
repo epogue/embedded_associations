@@ -32,7 +32,7 @@ module EmbeddedAssociations
 
   def filtered_params
     params_method = "#{root_resource_name}_params"
-    respond_to?(params_method) ? send(params_method) : params
+    respond_to?(params_method) ? send(params_method) : params[root_resource_name]
   end
 
   # Simple callbacks for now, eventually should use a filter system
@@ -76,7 +76,7 @@ module EmbeddedAssociations
 
     def run
       definitions.each do |definition|
-        handle_resource(definition, controller.root_resource, controller.filtered_params[controller.root_resource_name])
+        handle_resource(definition, controller.root_resource, controller.filtered_params)
       end
     end
 
