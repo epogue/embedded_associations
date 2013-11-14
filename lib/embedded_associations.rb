@@ -30,11 +30,6 @@ module EmbeddedAssociations
     resource_name
   end
 
-  def filtered_params
-    params_method = "#{root_resource_name}_params"
-    respond_to?(params_method) ? send(params_method) : params[root_resource_name]
-  end
-
   # Simple callbacks for now, eventually should use a filter system
   def before_embedded(record, action); end
 
@@ -76,7 +71,7 @@ module EmbeddedAssociations
 
     def run
       definitions.each do |definition|
-        handle_resource(definition, controller.root_resource, controller.filtered_params)
+        handle_resource(definition, controller.root_resource, controller.params[root_resource_name])
       end
     end
 
@@ -120,11 +115,13 @@ module EmbeddedAssociations
           # can't use current_assoc.find(id), see http://stackoverflow.com/questions/11605120/autosave-ignored-on-has-many-relation-what-am-i-missing
           r = current_assoc.find{|r| r.id == id.to_i}
           handle_resource(child_definition, r, attrs) if child_definition
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name.singularize}_params"))
           r.assign_attributes(attrs)
           run_before_update_callbacks(r)
         else
           r = current_assoc.build()
           handle_resource(child_definition, r, attrs) if child_definition
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name.singularize}_params"))
           r.assign_attributes(attrs)
           run_before_create_callbacks(r)
         end
@@ -137,16 +134,19 @@ module EmbeddedAssociations
       if r = current_assoc
         if attrs
           handle_resource(child_definition, r, attrs) if child_definition
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_params"))
           r.assign_attributes(attrs)
           run_before_update_callbacks(r)
         else
           handle_resource(child_definition, r, attrs) if child_definition
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_params"))
           run_before_destroy_callbacks(r)
           r.mark_for_destruction
         end
       elsif attrs
         r = parent.send("build_#{name}")
         handle_resource(child_definition, r, attrs) if child_definition
+        attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_params"))
         r.assign_attributes(attrs)
         run_before_create_callbacks(r)
       end
