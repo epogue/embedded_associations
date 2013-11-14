@@ -115,13 +115,13 @@ module EmbeddedAssociations
           # can't use current_assoc.find(id), see http://stackoverflow.com/questions/11605120/autosave-ignored-on-has-many-relation-what-am-i-missing
           r = current_assoc.find{|r| r.id == id.to_i}
           handle_resource(child_definition, r, attrs) if child_definition
-          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name.singularize}_params"))
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name.singularize}_attributes"))
           r.assign_attributes(attrs)
           run_before_update_callbacks(r)
         else
           r = current_assoc.build()
           handle_resource(child_definition, r, attrs) if child_definition
-          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name.singularize}_params"))
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name.singularize}_attributes"))
           r.assign_attributes(attrs)
           run_before_create_callbacks(r)
         end
@@ -134,19 +134,19 @@ module EmbeddedAssociations
       if r = current_assoc
         if attrs
           handle_resource(child_definition, r, attrs) if child_definition
-          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_params"))
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_attributes"))
           r.assign_attributes(attrs)
           run_before_update_callbacks(r)
         else
           handle_resource(child_definition, r, attrs) if child_definition
-          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_params"))
+          attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_attributes"))
           run_before_destroy_callbacks(r)
           r.mark_for_destruction
         end
       elsif attrs
         r = parent.send("build_#{name}")
         handle_resource(child_definition, r, attrs) if child_definition
-        attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_params"))
+        attrs = ActionController::Parameters.new(attrs).permit(*controller.send("#{name}_attributes"))
         r.assign_attributes(attrs)
         run_before_create_callbacks(r)
       end
