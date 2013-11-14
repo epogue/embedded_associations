@@ -71,7 +71,7 @@ module EmbeddedAssociations
 
     def run
       definitions.each do |definition|
-        handle_resource(definition, controller.root_resource, controller.params[root_resource_name])
+        handle_resource(definition, controller.root_resource, controller.params[controller.root_resource_name])
       end
     end
 
